@@ -21,8 +21,6 @@ public class OrderFulfillmentFacade {
     public Invoice completeOrderProcess(Long orderId) {
         Order completedOrder = orderService.confirmDelivery(orderId);
 
-        driverService.resetFatigue(completedOrder.getDriver().getId());
-
         Invoice generatedInvoice = invoiceService.generateInvoice(orderId);
 
         return generatedInvoice;
