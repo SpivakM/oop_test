@@ -24,6 +24,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private static final int MAX_FATIGUE = 100;
+    private static final double FATIGUE_DISTANCE_STEP_KM = 20.0;
+
     private final OrderRepository orderRepository;
     private final RouteService routeService;
     private final VehicleService vehicleService;
@@ -191,6 +194,6 @@ public class OrderService {
     }
 
     private int calculateFatigue(double distanceKm) {
-        return Math.min(100, (int) Math.round(distanceKm / 20.0));
+        return Math.min(MAX_FATIGUE, (int) Math.round(distanceKm / FATIGUE_DISTANCE_STEP_KM));
     }
 }
