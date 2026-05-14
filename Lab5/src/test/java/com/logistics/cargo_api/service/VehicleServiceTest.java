@@ -9,6 +9,7 @@ import com.logistics.cargo_api.entity.enums.VehicleType;
 import com.logistics.cargo_api.exception.CapacityExceededException;
 import com.logistics.cargo_api.exception.EntityNotFoundException;
 import com.logistics.cargo_api.exception.IncompatibleVehicleException;
+import com.logistics.cargo_api.exception.InvalidStatusTransitionException;
 import com.logistics.cargo_api.factory.RefrigeratorTruckFactory;
 import com.logistics.cargo_api.factory.TruckFactory;
 import com.logistics.cargo_api.factory.VanFactory;
@@ -79,6 +80,56 @@ class VehicleServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getVehicleType()).isEqualTo(VehicleType.VAN);
         assertThat(result.getStatus()).isEqualTo(VehicleStatus.AVAILABLE);
+    }
+
+    @Test
+    @DisplayName("✅ sendToMaintenance — позитивний: AVAILABLE → MAINTENANCE")
+    void sendToMaintenance_availableVehicle_updatesStatus() {
+        Vehicle vehicle = buildVehicle(VehicleType.TRUCK, 10000, 60);
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
+        when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Vehicle updated = vehicleService.sendToMaintenance(1L);
+
+        assertThat(updated.getStatus()).isEqualTo(VehicleStatus.MAINTENANCE);
+        verify(vehicleRepository).save(vehicle);
+    }
+
+    @Test
+    @DisplayName("❌ sendToMaintenance — негативний: BUSY авто не можна відправити")
+    void sendToMaintenance_busyVehicle_throwsException() {
+        Vehicle vehicle = buildVehicle(VehicleType.TRUCK, 10000, 60);
+        vehicle.setStatus(VehicleStatus.BUSY);
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
+
+        assertThatThrownBy(() -> vehicleService.sendToMaintenance(1L))
+                .isInstanceOf(InvalidStatusTransitionException.class)
+                .hasMessageContaining("у рейсі");
+    }
+
+    @Test
+    @DisplayName("✅ completeMaintenance — позитивний: MAINTENANCE → AVAILABLE")
+    void completeMaintenance_vehicleOnService_updatesStatus() {
+        Vehicle vehicle = buildVehicle(VehicleType.TRUCK, 10000, 60);
+        vehicle.setStatus(VehicleStatus.MAINTENANCE);
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
+        when(vehicleRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Vehicle updated = vehicleService.completeMaintenance(1L);
+
+        assertThat(updated.getStatus()).isEqualTo(VehicleStatus.AVAILABLE);
+        verify(vehicleRepository).save(vehicle);
+    }
+
+    @Test
+    @DisplayName("❌ completeMaintenance — негативний: авто не на сервісі")
+    void completeMaintenance_vehicleNotOnService_throwsException() {
+        Vehicle vehicle = buildVehicle(VehicleType.VAN, 1500, 10);
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
+
+        assertThatThrownBy(() -> vehicleService.completeMaintenance(1L))
+                .isInstanceOf(InvalidStatusTransitionException.class)
+                .hasMessageContaining("не перебуває");
     }
 
     @Test

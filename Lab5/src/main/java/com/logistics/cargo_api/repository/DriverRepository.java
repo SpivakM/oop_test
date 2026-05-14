@@ -11,4 +11,5 @@ import java.util.List;
 public interface DriverRepository extends JpaRepository<Driver, Long> {
     List<Driver> findByStatus(DriverStatus status);
     List<Driver> findByFatigueLevelLessThan(int maxFatigue);
+    List<Driver> findByStatusAndFatigueLevelLessThan(DriverStatus status, int maxFatigue);
 }

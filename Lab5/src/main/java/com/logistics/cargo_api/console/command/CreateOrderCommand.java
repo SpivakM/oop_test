@@ -74,9 +74,9 @@ public class CreateOrderCommand implements Command {
             vehicles.forEach(vehicle -> System.out.println(vehicle.toString()));
         }
 
-        List<Driver> drivers = driverService.findAvailable();
+        List<Driver> drivers = driverService.findDispatchable();
         if (!drivers.isEmpty()) {
-            System.out.println("--- Доступні водії ---");
+            System.out.println("--- Доступні водії (готові до рейсу) ---");
             drivers.forEach(driver -> System.out.println(driver.toString()));
         }
 

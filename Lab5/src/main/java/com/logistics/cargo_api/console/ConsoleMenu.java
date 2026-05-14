@@ -1,6 +1,7 @@
 package com.logistics.cargo_api.console;
 
 import com.logistics.cargo_api.console.command.*;
+import com.logistics.cargo_api.facade.OrderFulfillmentFacade;
 import com.logistics.cargo_api.service.CargoService;
 import com.logistics.cargo_api.service.DriverService;
 import com.logistics.cargo_api.service.InvoiceService;
@@ -26,6 +27,7 @@ public class ConsoleMenu implements CommandLineRunner {
     private final DriverService driverService;
     private final CargoService cargoService;
     private final InvoiceService invoiceService;
+    private final OrderFulfillmentFacade orderFulfillmentFacade;
 
     private final Map<Integer, Command> commands = new LinkedHashMap<>();
 
@@ -40,6 +42,11 @@ public class ConsoleMenu implements CommandLineRunner {
         commands.put(7, new AdvanceOrderCommand(orderService));
         commands.put(8, new CancelOrderCommand(orderService));
         commands.put(9, new GenerateInvoiceCommand(invoiceService));
+        commands.put(10, new CompleteOrderProcessCommand(orderFulfillmentFacade));
+        commands.put(11, new SendVehicleToMaintenanceCommand(vehicleService));
+        commands.put(12, new ReturnVehicleFromMaintenanceCommand(vehicleService));
+        commands.put(13, new SendDriverOnLeaveCommand(driverService));
+        commands.put(14, new ReturnDriverFromLeaveCommand(driverService));
 
         commands.put(0, new ExitCommand());
     }
