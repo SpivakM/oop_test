@@ -50,7 +50,12 @@ public class CreateOrderCommand implements Command {
             Order order = orderService.createOrder(routeId, vehicleId, driverId, cargoIds);
             System.out.println("✅ Замовлення створено: " + order);
         } catch (NumberFormatException e) {
-            System.out.println("❌ Помилка: ID мають бути числовими значеннями.");
+            String message = e.getMessage();
+            if (message != null && !message.isBlank()) {
+                System.out.println("❌ Помилка: " + message);
+            } else {
+                System.out.println("❌ Помилка: ID мають бути числовими значеннями.");
+            }
         } catch (Exception e) {
             System.out.println("❌ Помилка створення замовлення: " + e.getMessage());
         }
@@ -86,10 +91,18 @@ public class CreateOrderCommand implements Command {
         if (input == null || input.isBlank()) {
             return new ArrayList<>();
         }
-        return Arrays.stream(input.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .map(Long::parseLong)
-                .toList();
+        List<Long> ids = new ArrayList<>();
+        for (String rawValue : Arrays.stream(input.split(",")).toList()) {
+            String value = rawValue.trim();
+            if (value.isBlank()) {
+                continue;
+            }
+            try {
+                ids.add(Long.parseLong(value));
+            } catch (NumberFormatException e) {
+                throw new NumberFormatException("Невірний ID вантажу: " + value);
+            }
+        }
+        return ids;
     }
 }

@@ -52,6 +52,8 @@ class InvoiceServiceTest {
                 .licenseNumber("АВ123456").fatigueLevel(20)
                 .status(DriverStatus.AVAILABLE)
                 .build();
+
+        lenient().when(invoiceRepository.findByOrderId(1L)).thenReturn(Optional.empty());
     }
 
     private Order buildOrder(OrderStatus status, CargoType... cargoTypes) {
@@ -74,7 +76,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — позитивний: стандартний вантаж без надбавки")
     void generateInvoice_standardCargo_noSurcharge() {
         Order order = buildOrder(OrderStatus.IN_TRANSIT, CargoType.STANDARD);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
         when(invoiceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -93,7 +94,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — позитивний: небезпечний вантаж → 50% надбавка")
     void generateInvoice_dangerousCargo_hasFiftySurcharge() {
         Order order = buildOrder(OrderStatus.IN_TRANSIT, CargoType.DANGEROUS);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
         when(invoiceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -108,7 +108,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — позитивний: крихкий вантаж → 20% надбавка")
     void generateInvoice_fragileCargo_hasTwentySurcharge() {
         Order order = buildOrder(OrderStatus.IN_TRANSIT, CargoType.FRAGILE);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
         when(invoiceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -122,7 +121,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — позитивний: рефрижераторний вантаж → 30% надбавка")
     void generateInvoice_refrigeratedCargo_hasThirtySurcharge() {
         Order order = buildOrder(OrderStatus.IN_TRANSIT, CargoType.REFRIGERATED);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
         when(invoiceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -136,7 +134,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — позитивний: збірне перевезення → застосовується максимальна надбавка")
     void generateInvoice_mixedCargo_appliesHighestSurcharge() {
         Order order = buildOrder(OrderStatus.IN_TRANSIT, CargoType.FRAGILE, CargoType.DANGEROUS);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
         when(invoiceRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -150,7 +147,6 @@ class InvoiceServiceTest {
     @DisplayName("✅ generateInvoice — ідемпотентний: повторний виклик повертає той самий інвойс")
     void generateInvoice_alreadyExists_returnsExistingInvoice() {
         Invoice existing = Invoice.builder().id(10L).build();
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(true);
         when(invoiceRepository.findByOrderId(1L)).thenReturn(Optional.of(existing));
 
         Invoice result = invoiceService.generateInvoice(1L);
@@ -164,7 +160,6 @@ class InvoiceServiceTest {
     @DisplayName("❌ generateInvoice — негативний: PENDING замовлення → виняток")
     void generateInvoice_pendingOrder_throwsInvalidStatusTransitionException() {
         Order order = buildOrder(OrderStatus.PENDING, CargoType.STANDARD);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
 
         assertThatThrownBy(() -> invoiceService.generateInvoice(1L))
@@ -176,7 +171,6 @@ class InvoiceServiceTest {
     @DisplayName("❌ generateInvoice — негативний: скасоване замовлення → виняток")
     void generateInvoice_cancelledOrder_throwsInvalidStatusTransitionException() {
         Order order = buildOrder(OrderStatus.CANCELLED, CargoType.STANDARD);
-        when(invoiceRepository.existsByOrderId(1L)).thenReturn(false);
         when(orderService.findById(1L)).thenReturn(order);
 
         assertThatThrownBy(() -> invoiceService.generateInvoice(1L))

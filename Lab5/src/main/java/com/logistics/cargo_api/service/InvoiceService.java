@@ -41,9 +41,9 @@ public class InvoiceService {
 
     @Transactional
     public Invoice generateInvoice(Long orderId) {
-        if (invoiceRepository.existsByOrderId(orderId)) {
-            return invoiceRepository.findByOrderId(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Інвойс", orderId));
+        Optional<Invoice> existing = invoiceRepository.findByOrderId(orderId);
+        if (existing.isPresent()) {
+            return existing.get();
         }
 
         Order order = orderService.findById(orderId);
