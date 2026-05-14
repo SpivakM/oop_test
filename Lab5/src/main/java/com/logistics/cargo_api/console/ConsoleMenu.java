@@ -2,7 +2,11 @@ package com.logistics.cargo_api.console;
 
 import com.logistics.cargo_api.console.command.*;
 import com.logistics.cargo_api.service.CargoService;
+import com.logistics.cargo_api.service.DriverService;
+import com.logistics.cargo_api.service.InvoiceService;
 import com.logistics.cargo_api.service.OrderService;
+import com.logistics.cargo_api.service.RouteService;
+import com.logistics.cargo_api.service.VehicleService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -17,14 +21,25 @@ import java.util.Scanner;
 public class ConsoleMenu implements CommandLineRunner {
 
     private final OrderService orderService;
+    private final RouteService routeService;
+    private final VehicleService vehicleService;
+    private final DriverService driverService;
+    private final CargoService cargoService;
+    private final InvoiceService invoiceService;
 
     private final Map<Integer, Command> commands = new LinkedHashMap<>();
 
     @PostConstruct
     public void initCommands() {
         commands.put(1, new ShowAllOrdersCommand(orderService));
-        commands.put(2, new AdvanceOrderCommand(orderService));
-        commands.put(3, new CancelOrderCommand(orderService));
+        commands.put(2, new ShowRoutesCommand(routeService));
+        commands.put(3, new ShowVehiclesCommand(vehicleService));
+        commands.put(4, new ShowDriversCommand(driverService));
+        commands.put(5, new ShowWarehouseCargoCommand(cargoService));
+        commands.put(6, new CreateOrderCommand(orderService, routeService, vehicleService, driverService, cargoService));
+        commands.put(7, new AdvanceOrderCommand(orderService));
+        commands.put(8, new CancelOrderCommand(orderService));
+        commands.put(9, new GenerateInvoiceCommand(invoiceService));
 
         commands.put(0, new ExitCommand());
     }

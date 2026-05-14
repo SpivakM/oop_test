@@ -238,7 +238,7 @@ class OrderServiceTest {
 
         assertThatThrownBy(() -> orderService.cancelOrder(1L))
                 .isInstanceOf(InvalidStatusTransitionException.class)
-                .hasMessageContaining(OrderStatus.PENDING.getDisplayName());
+                .hasMessageContaining("в дорозі");
     }
 
     @Test

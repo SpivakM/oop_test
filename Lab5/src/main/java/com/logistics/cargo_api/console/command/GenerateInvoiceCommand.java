@@ -1,16 +1,18 @@
 package com.logistics.cargo_api.console.command;
 
-import com.logistics.cargo_api.service.OrderService;
+import com.logistics.cargo_api.entity.Invoice;
+import com.logistics.cargo_api.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
+
 import java.util.Scanner;
 
 @RequiredArgsConstructor
-public class AdvanceOrderCommand implements Command {
-    private final OrderService orderService;
+public class GenerateInvoiceCommand implements Command {
+    private final InvoiceService invoiceService;
 
     @Override
     public String getDescription() {
-        return "Просунути замовлення на наступний етап (State Pattern)";
+        return "Згенерувати інвойс для замовлення";
     }
 
     @Override
@@ -18,12 +20,12 @@ public class AdvanceOrderCommand implements Command {
         System.out.print("Введіть ID замовлення: ");
         try {
             Long id = Long.parseLong(scanner.nextLine());
-            var updated = orderService.advanceOrder(id);
-            System.out.println("✅ Статус замовлення оновлено на: " + updated.getStatus().getDisplayName());
+            Invoice invoice = invoiceService.generateInvoice(id);
+            System.out.println(invoice.getDetailedInfo());
         } catch (NumberFormatException e) {
             System.out.println("❌ Помилка: ID має бути числом.");
         } catch (Exception e) {
-            System.out.println("❌ Помилка: " + e.getMessage());
+            System.out.println("❌ Помилка генерації інвойсу: " + e.getMessage());
         }
     }
 }
