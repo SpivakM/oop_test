@@ -1,7 +1,7 @@
 package com.logistics.cargo_api.decorator;
 
 public class FragileInsuranceDecorator extends CostDecorator {
-    private final double insurancePremium = 500.0;
+    private final double multiplier = 1.2;
 
     public FragileInsuranceDecorator(DeliveryCost wrapper) {
         super(wrapper);
@@ -9,11 +9,11 @@ public class FragileInsuranceDecorator extends CostDecorator {
 
     @Override
     public double getCost() {
-        return super.getCost() + insurancePremium;
+        return super.getCost() * multiplier;
     }
 
     @Override
     public String getDetails() {
-        return super.getDetails() + "\n + Обов'язкове страхування крихкого вантажу: " + insurancePremium + " грн";
+        return super.getDetails() + "\n + Надбавка за крихкий вантаж: +" + (int) ((multiplier - 1) * 100) + "%";
     }
 }

@@ -9,6 +9,9 @@ import com.logistics.cargo_api.entity.enums.VehicleType;
 import com.logistics.cargo_api.exception.CapacityExceededException;
 import com.logistics.cargo_api.exception.EntityNotFoundException;
 import com.logistics.cargo_api.exception.IncompatibleVehicleException;
+import com.logistics.cargo_api.factory.RefrigeratorTruckFactory;
+import com.logistics.cargo_api.factory.TruckFactory;
+import com.logistics.cargo_api.factory.VanFactory;
 import com.logistics.cargo_api.repository.VehicleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +35,15 @@ class VehicleServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
+
+    @Mock
+    private VanFactory vanFactory;
+
+    @Mock
+    private TruckFactory truckFactory;
+
+    @Mock
+    private RefrigeratorTruckFactory refrigeratorFactory;
 
     @InjectMocks
     private VehicleService vehicleService;
@@ -57,6 +71,7 @@ class VehicleServiceTest {
     @DisplayName("✅ addVehicle — позитивний: фургон успішно збережений")
     void addVehicle_validParams_returnsSavedVehicle() {
         Vehicle saved = buildVehicle(VehicleType.VAN, 1500, 10);
+        when(vanFactory.createVehicle(anyString(), anyDouble(), anyDouble(), anyDouble())).thenReturn(saved);
         when(vehicleRepository.save(any())).thenReturn(saved);
 
         Vehicle result = vehicleService.addVehicle("АА0001ВВ", VehicleType.VAN, 1500, 10, 12.0);

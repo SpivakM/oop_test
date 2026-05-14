@@ -169,7 +169,7 @@ class InvoiceServiceTest {
 
         assertThatThrownBy(() -> invoiceService.generateInvoice(1L))
                 .isInstanceOf(InvalidStatusTransitionException.class)
-                .hasMessageContaining("PENDING");
+                .hasMessageContaining("не в дорозі");
     }
 
     @Test

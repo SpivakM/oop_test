@@ -14,6 +14,6 @@ public class DangerousCargoDecorator extends CostDecorator {
 
     @Override
     public String getDetails() {
-        return super.getDetails() + "\n + Націнка за небезпечний вантаж (x" + multiplier + ")";
+        return super.getDetails() + "\n + Націнка за небезпечний вантаж: +" + (int) ((multiplier - 1) * 100) + "%";
     }
 }

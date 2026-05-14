@@ -26,6 +26,15 @@ public class Invoice {
     @Column(nullable = false)
     private double totalAmount;
 
+    @Column(nullable = false)
+    private double fuelCost;
+
+    @Column(nullable = false)
+    private double amortizationCost;
+
+    @Column(nullable = false)
+    private double cargoSurcharge;
+
     @Column(columnDefinition = "TEXT")
     private String details;
 
@@ -38,8 +47,12 @@ public class Invoice {
 
     public String getDetailedInfo() {
         return String.format(
-                "ІНВОЙС №%d (Замовлення №%d)\nДата: %s\nСтатус: %s\n------------------------------\n%s\n------------------------------\nРАЗОМ ДО ОПЛАТИ: %.2f грн",
-                id, order.getId(), issuedAt, status.getDisplayName(), details, totalAmount
+                "ІНВОЙС №%d (Замовлення №%d)\nДата: %s\nСтатус: %s\n" +
+                        "Пальне: %.2f грн | Амортизація: %.2f грн | Надбавка: %.2f грн\n" +
+                        "------------------------------\n%s\n------------------------------\nРАЗОМ ДО ОПЛАТИ: %.2f грн",
+                id, order.getId(), issuedAt, status.getDisplayName(),
+                fuelCost, amortizationCost, cargoSurcharge,
+                details, totalAmount
         );
     }
 }

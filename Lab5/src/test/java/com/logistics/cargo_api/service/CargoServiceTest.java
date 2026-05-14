@@ -4,6 +4,10 @@ import com.logistics.cargo_api.entity.Cargo;
 import com.logistics.cargo_api.entity.enums.CargoStatus;
 import com.logistics.cargo_api.entity.enums.CargoType;
 import com.logistics.cargo_api.exception.EntityNotFoundException;
+import com.logistics.cargo_api.factory.DangerousCargoFactory;
+import com.logistics.cargo_api.factory.FragileCargoFactory;
+import com.logistics.cargo_api.factory.RefrigeratedCargoFactory;
+import com.logistics.cargo_api.factory.StandardCargoFactory;
 import com.logistics.cargo_api.repository.CargoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 
@@ -26,6 +32,18 @@ class CargoServiceTest {
 
     @Mock
     private CargoRepository cargoRepository;
+
+    @Mock
+    private StandardCargoFactory standardCargoFactory;
+
+    @Mock
+    private FragileCargoFactory fragileCargoFactory;
+
+    @Mock
+    private DangerousCargoFactory dangerousCargoFactory;
+
+    @Mock
+    private RefrigeratedCargoFactory refrigeratedCargoFactory;
 
     @InjectMocks
     private CargoService cargoService;
@@ -44,6 +62,7 @@ class CargoServiceTest {
     @DisplayName("✅ addCargo — позитивний сценарій: стандартний вантаж зберігається")
     void addCargo_validData_returnsSavedCargo() {
         Cargo saved = buildCargo(1L, "Меблі", CargoType.STANDARD, CargoStatus.ON_WAREHOUSE);
+        when(standardCargoFactory.createCargo(anyString(), anyDouble(), anyDouble())).thenReturn(saved);
         when(cargoRepository.save(any(Cargo.class))).thenReturn(saved);
 
         Cargo result = cargoService.addCargo("Меблі", 100.0, 2.0, CargoType.STANDARD);
@@ -58,6 +77,7 @@ class CargoServiceTest {
     @DisplayName("✅ addCargo — позитивний сценарій: небезпечний вантаж")
     void addCargo_dangerousCargo_savedSuccessfully() {
         Cargo saved = buildCargo(2L, "Хімікати", CargoType.DANGEROUS, CargoStatus.ON_WAREHOUSE);
+        when(dangerousCargoFactory.createCargo(anyString(), anyDouble(), anyDouble())).thenReturn(saved);
         when(cargoRepository.save(any(Cargo.class))).thenReturn(saved);
 
         Cargo result = cargoService.addCargo("Хімікати", 500.0, 3.0, CargoType.DANGEROUS);
