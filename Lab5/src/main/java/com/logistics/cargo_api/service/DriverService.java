@@ -55,6 +55,13 @@ public class DriverService {
         return driverRepository.findByStatus(DriverStatus.AVAILABLE);
     }
 
+    @Transactional(readOnly = true)
+    public List<Driver> findDispatchable() {
+        return driverRepository.findByStatusAndFatigueLevelLessThan(
+                DriverStatus.AVAILABLE, MAX_ALLOWED_FATIGUE
+        );
+    }
+
 
     public void validateDispatchable(Driver driver) {
         if (driver.getStatus() != DriverStatus.AVAILABLE) {
@@ -73,6 +80,34 @@ public class DriverService {
     public Driver updateStatus(Long id, DriverStatus newStatus) {
         Driver driver = findById(id);
         driver.setStatus(newStatus);
+        return driverRepository.save(driver);
+    }
+
+    @Transactional
+    public Driver sendOnLeave(Long id) {
+        Driver driver = findById(id);
+        if (driver.getStatus() == DriverStatus.BUSY) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Водій %s зараз у рейсі та не може бути у відпустці.",
+                            driver.getFullName()));
+        }
+        if (driver.getStatus() == DriverStatus.ON_LEAVE) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Водій %s вже у відпустці.", driver.getFullName()));
+        }
+        driver.setStatus(DriverStatus.ON_LEAVE);
+        return driverRepository.save(driver);
+    }
+
+    @Transactional
+    public Driver returnFromLeave(Long id) {
+        Driver driver = findById(id);
+        if (driver.getStatus() != DriverStatus.ON_LEAVE) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Водій %s не перебуває у відпустці.", driver.getFullName()));
+        }
+        driver.setStatus(DriverStatus.AVAILABLE);
+        driver.setFatigueLevel(0);
         return driverRepository.save(driver);
     }
 

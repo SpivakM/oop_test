@@ -8,6 +8,7 @@ import com.logistics.cargo_api.entity.enums.VehicleType;
 import com.logistics.cargo_api.exception.CapacityExceededException;
 import com.logistics.cargo_api.exception.EntityNotFoundException;
 import com.logistics.cargo_api.exception.IncompatibleVehicleException;
+import com.logistics.cargo_api.exception.InvalidStatusTransitionException;
 import com.logistics.cargo_api.factory.RefrigeratorTruckFactory;
 import com.logistics.cargo_api.factory.TruckFactory;
 import com.logistics.cargo_api.factory.VanFactory;
@@ -101,6 +102,33 @@ public class VehicleService {
     public Vehicle updateStatus(Long id, VehicleStatus newStatus) {
         Vehicle vehicle = findById(id);
         vehicle.setStatus(newStatus);
+        return vehicleRepository.save(vehicle);
+    }
+
+    @Transactional
+    public Vehicle sendToMaintenance(Long id) {
+        Vehicle vehicle = findById(id);
+        if (vehicle.getStatus() == VehicleStatus.BUSY) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Авто %s зараз у рейсі та не може бути на сервісі.",
+                            vehicle.getLicensePlate()));
+        }
+        if (vehicle.getStatus() == VehicleStatus.MAINTENANCE) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Авто %s вже на сервісі.", vehicle.getLicensePlate()));
+        }
+        vehicle.setStatus(VehicleStatus.MAINTENANCE);
+        return vehicleRepository.save(vehicle);
+    }
+
+    @Transactional
+    public Vehicle completeMaintenance(Long id) {
+        Vehicle vehicle = findById(id);
+        if (vehicle.getStatus() != VehicleStatus.MAINTENANCE) {
+            throw new InvalidStatusTransitionException(
+                    String.format("Авто %s не перебуває на сервісі.", vehicle.getLicensePlate()));
+        }
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         return vehicleRepository.save(vehicle);
     }
 
