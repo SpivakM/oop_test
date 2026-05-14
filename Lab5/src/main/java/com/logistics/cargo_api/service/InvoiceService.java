@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -85,11 +86,12 @@ public class InvoiceService {
     }
 
     double calculateCargoSurcharge(Order order, double baseCost) {
-        if (order.getCargos() == null || order.getCargos().isEmpty()) {
+        List<Cargo> cargos = getCargos(order);
+        if (cargos.isEmpty()) {
             return 0.0;
         }
         double maxSurchargeRate = 0.0;
-        for (Cargo cargo : order.getCargos()) {
+        for (Cargo cargo : cargos) {
             double rate = switch (cargo.getCargoType()) {
                 case DANGEROUS    -> DANGEROUS_SURCHARGE;
                 case REFRIGERATED -> REFRIGERATED_SURCHARGE;
@@ -106,21 +108,22 @@ public class InvoiceService {
     private void validateOrderStatus(Order order) {
         if (order.getStatus() == OrderStatus.PENDING) {
             throw new InvalidStatusTransitionException(
-                    "Неможливо виставити інвойс для замовлення, яке ще не в дорозі.");
+                    "Неможливо виписати інвойс для замовлення, яке ще не в дорозі.");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
             throw new InvalidStatusTransitionException(
-                    "Неможливо виставити інвойс для скасованого замовлення.");
+                    "Неможливо виписати інвойс для скасованого замовлення.");
         }
     }
 
     private CargoType getHighestSurchargeType(Order order) {
-        CargoType result = null;
-        double maxRate = 0.0;
-        if (order.getCargos() == null) {
+        List<Cargo> cargos = getCargos(order);
+        if (cargos.isEmpty()) {
             return null;
         }
-        for (Cargo cargo : order.getCargos()) {
+        CargoType result = null;
+        double maxRate = 0.0;
+        for (Cargo cargo : cargos) {
             double rate = switch (cargo.getCargoType()) {
                 case DANGEROUS    -> DANGEROUS_SURCHARGE;
                 case REFRIGERATED -> REFRIGERATED_SURCHARGE;
@@ -133,6 +136,10 @@ public class InvoiceService {
             }
         }
         return result;
+    }
+
+    private List<Cargo> getCargos(Order order) {
+        return order.getCargos() == null ? List.of() : order.getCargos();
     }
 
     @Transactional(readOnly = true)
